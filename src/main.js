@@ -42,30 +42,32 @@ function setBackgroundBlur(window_id) {
         set: "-set _KDE_NET_WM_BLUR_BEHIND_REGION 0x0"
     }
     const set_blur_command = `xprop ${parms.id} ${parms.f} ${parms.set}`;
-    exec(set_blur_command);
+    try {
+        console.log(`[Background Blur] 尝试为窗口 ${window_id} 设置透明`);
+        exec(set_blur_command);
+    } catch(e) {
+        // do nothing
+    }
 }
 
 
 // 获取QQ窗口ID
 function getWindowIdArray() {
     const window_ids = [];
-
     try {
         // 执行命令获取QQ的窗口
-        const shell_command = `wmctrl -l | grep "QQ"`;
-        const stdout = execSync(shell_command, { encoding: "utf-8" });
+        const stdout = execSync(`wmctrl -l | grep "QQ"`, { encoding: "utf-8" });
         // 如果有多个窗口，先每行分开
         const lines = stdout.trim().split("\n");
-        for (const line of lines) {
+        for(const line of lines) {
             // 按空格分开，第一个就是窗口id
             const window_id = line.split(" ")[0];
             window_ids.push(window_id);
         }
+    } catch(e) {
+        // do nothing
     }
-
-    finally {
-        return window_ids;
-    }
+    return window_ids;
 }
 
 
@@ -76,33 +78,23 @@ function onBrowserWindowCreated(window) {
     window.once("show", () => {
         // 设置窗口也会设置纯黑，所以需要改透明
         window.setBackgroundColor("#00000000");
-
         // 给每个新开的窗口后面都加上QQ
         // 因为我发现有些窗口不带QQ这俩字符
         // 比如设置窗口就叫设置，导致获取不到窗口ID（
         const window_title = window.getTitle();
         if (!window_title.includes("QQ")) {
-            window.setTitle(`${window_title}QQ`);
+            window.setTitle(`${window_title} - QQ`);
         }
-
-        const interval = setInterval(() => {
-            const current_ids = getWindowIdArray();
-
-            // 跟之前获取的数组一样就重新获取
-            if (current_ids.toString() == prev_ids.toString()) {
-                return;
-            }
-
-            // 给新的window id设置背景模糊效果
-            for (const id of current_ids) {
+        const current_ids = getWindowIdArray();
+        if(current_ids.toString() !== prev_ids.toString()) {
+            // 给新的 window id 设置背景模糊效果
+            for(const id of current_ids) {
                 if (!prev_ids.includes(id)) {
                     setBackgroundBlur(id);
                 }
             }
-
             prev_ids = current_ids;
-            clearInterval(interval)
-        }, 100);
+        }
     });
 }
 
