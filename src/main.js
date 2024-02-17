@@ -16,7 +16,7 @@ Module._load = (...args) => {
         construct(target, [original_config], newTarget) {
             return Reflect.construct(target, [{
                 ...original_config,
-                backgroundColor: "#00000000",
+                backgroundColor: "#22EAACB8",
                 transparent: true
             }], newTarget);
         }
@@ -76,8 +76,8 @@ let prev_ids = [];
 
 function onBrowserWindowCreated(window) {
     window.once("show", () => {
-        // 设置窗口也会设置纯黑，所以需要改透明
-        window.setBackgroundColor("#00000000");
+        // 窗口颜色改粉色透明
+        window.setBackgroundColor("#22EAACB8");
         // 给每个新开的窗口后面都加上QQ
         // 因为我发现有些窗口不带QQ这俩字符
         // 比如设置窗口就叫设置，导致获取不到窗口ID（
